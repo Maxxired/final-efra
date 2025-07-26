@@ -1,0 +1,51 @@
+services:
+  api:
+    build:
+      context: ./back-efra
+      dockerfile: dockerfile
+    command: npm run dev
+    volumes:
+      - ./back-efra:/app
+      - /app/node_modules
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: development
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      DB_NAME: mydb
+      JWT_SECRET: ${JWT_SECRET}
+      RECAPTCHA_SECRET: ${RECAPTCHA_SECRET}
+      DISCORD_WEBHOOK: ${DISCORD_WEBHOOK}
+    depends_on:
+      - db
+
+  # Servicio del Frontend (React/Vite)
+  frontend:
+    build:
+      context: ./landing-vortex
+      dockerfile: dockerfile
+    command: npm run dev
+    volumes:
+      - ./landing-vortex:/app
+      - /app/node_modules
+    ports:
+      - "5173:5173"
+    depends_on:
+      - api
+
+  db:
+    image: postgres:15
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: mydb
+    ports:
+      - "5432:5432"
+
+volumes:
+  postgres_data:
