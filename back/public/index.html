@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formulario de Contacto</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+
+<div class="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
+
+    <h2 class="text-2xl font-bold mb-6 text-center text-gray-800">Formulario de Contacto 06</h2>
+
+    <form action="/formulario" method="POST" class="space-y-4">
+
+        <div>
+            <label for="nombre" class="block text-gray-700 font-medium mb-1">Nombre</label>
+            <input type="text" id="nombre" name="nombre" required
+                   class="w-full border border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400">
+        </div>
+
+        <div>
+            <label for="correo" class="block text-gray-700 font-medium mb-1">Correo electrónico</label>
+            <input type="email" id="correo" name="correo" required
+                   class="w-full border border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400">
+        </div>
+
+        <div>
+            <label for="telefono" class="block text-gray-700 font-medium mb-1">Teléfono</label>
+            <input type="tel" id="telefono" name="telefono" required
+                   class="w-full border border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400">
+        </div>
+
+        <div>
+            <label for="mensaje" class="block text-gray-700 font-medium mb-1">Mensaje</label>
+            <textarea id="mensaje" name="mensaje" rows="4" required
+                      class="w-full border border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"></textarea>
+        </div>
+
+        <div class="flex w-full justify-center items-center mt-4 items-center">
+            <div class="g-recaptcha" data-sitekey="6Lc-j2wrAAAAAOBR9lig-u1SALn6DFtIcNmjhr4H"></div>
+        </div>
+
+        <div class="gap-5 flex-row ">
+            <input type="checkbox"></input>
+
+            <label className='mx-2'>He leido y acepto los <span className="text-blue-400 cursor-pointer">terminos y condiciones</span>.</label>
+        </div>
+
+
+        <button type="submit"
+                class="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition duration-200">
+            Enviar
+        </button>
+
+
+    </form>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+        const form = document.querySelector('#contact-form');
+        form.addEventListener('submit', function (event) {
+            event.preventDefault();
+
+            const recaptchaResponse = grecaptcha.getResponse();
+
+            if (!recaptchaResponse) {
+            alert("Por favor completa el reCAPTCHA.");
+            return;
+            }
+
+            const formData = new FormData(form);
+            const data = Object.fromEntries(formData.entries());
+
+            data["g-recaptcha-response"] = recaptchaResponse;
+
+            fetch('http://localhost:3000/formulario', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data),
+            })
+            .then(() => {
+            alert('Formulario enviado con éxito');
+            grecaptcha.reset(); // resetea el reCAPTCHA
+            form.reset();       // limpia el formulario
+            })
+            .catch(() => {
+            alert('Ocurrió un error al enviar el formulario');
+            });
+        });
+        });
+  </script>
+
+
+
+</div>
+
+</body>
+</html>
+
