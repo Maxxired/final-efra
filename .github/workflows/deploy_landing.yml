@@ -1,0 +1,44 @@
+name: Deploy Backend to VPS
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+        
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout repo
+      uses: actions/checkout@v4
+
+    - name: Build Docker image
+      run: docker build -t landing:latest .
+
+    - name: Save image to tarball
+      run: docker save -o landing.tar landing:latest
+
+    - name: Transfer files to VPS
+      uses: appleboy/scp-action@v1
+      with:
+        host: ${{ secrets.HOST }}
+        username: ${{ secrets.USERNAME }}
+        key: ${{ secrets.ACCESS_KEY }}
+        port: ${{ secrets.PORT }}
+        source: "landing.tar,docker-compose.yml"
+        target: "/var/www/landing.vortexsoftware.net"
+      
+    - name: SSH and deploy with Docker Compose
+      uses: appleboy/ssh-action@v1.0.0
+      with:
+        host: ${{ secrets.HOST }}
+        username: ${{ secrets.USERNAME }}
+        key: ${{ secrets.ACCESS_KEY }}
+        port: ${{ secrets.PORT }}
+        script: |
+          cd /var/www/landing.vortexsoftware.net
+          docker compose down
+          docker load -i landing.tar
+          rm landing.tar
+          docker compose up -d
